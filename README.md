@@ -1,3 +1,105 @@
+# Arduino App Lab — Raspberry Pi / Linux ARM64
+## Build (unofficial)
+
+This is an **unofficial** fork of [arduino/arduino-app-lab](https://github.com/arduino/arduino-app-lab), providing a working build for Raspberry Pi (Linux ARM64). The upstream project does not yet publish an ARM64/Raspberry Pi release.
+
+All source code is unmodified from upstream. This fork only adds Raspberry Pi build/packaging instructions and one runtime fix (see below). License: GPL-3.0 (see [LICENSE](LICENSE)), same as upstream.
+
+<img width="1920" height="1025" alt="Arduino-App-Lab" src="https://github.com/user-attachments/assets/16a1dfad-fc22-46a8-afa5-baf3ce603410" />
+
+## Quick install (Raspberry Pi OS, 64-bit)
+
+1. Download the `.deb` from the [Releases](../../releases) page or [arduino-app-lab_0.0.0-dev-1_linux_arm64.deb](https://github.com/flavioscutti/arduino-app-lab-raspberry-pi/releases/download/untagged-7ed34b15a5c2d67bccbe/arduino-app-lab_0.0.0-dev-1_linux_arm64.deb)
+3. Install it:
+   ```bash
+   sudo apt install ./arduino-app-lab_*.deb
+   ```
+4. Launch "Arduino App Lab" from the Applications menu, or from a terminal:
+   ```bash
+   WEBKIT_DISABLE_COMPOSITING_MODE=1 ArduinoAppLab
+   ```
+
+## Known issue: garbled window on launch
+
+On Raspberry Pi, WebKitGTK's hardware-accelerated compositing can render the window as corrupted/garbled until it's resized. The `.deb` package already launches with the fix applied (`WEBKIT_DISABLE_COMPOSITING_MODE=1`). If you build from source yourself, remember to set this environment variable when launching, or add it to the `Exec=` line of the `.desktop` file:
+
+```bash
+sed -i 's#^Exec=#Exec=env WEBKIT_DISABLE_COMPOSITING_MODE=1 #' ~/.local/share/applications/ArduinoAppLab.desktop
+```
+
+## Building from source
+
+Tested on Raspberry Pi OS (64-bit, Debian 12 "bookworm"), Raspberry Pi 4.
+
+### 1. Check you're on 64-bit
+
+```bash
+uname -m   # must print "aarch64"
+```
+
+### 2. System dependencies
+
+```bash
+sudo apt-get update
+sudo apt-get install -y git wget jq unzip zip build-essential pkg-config libwebkit2gtk-4.1-dev libgtk-3-dev
+```
+
+### 3. Go 1.26.3+ (the version in apt is too old)
+
+```bash
+cd /tmp
+wget https://go.dev/dl/go1.26.3.linux-arm64.tar.gz
+sudo rm -rf /usr/local/go
+sudo tar -C /usr/local -xzf go1.26.3.linux-arm64.tar.gz
+echo 'export PATH=$PATH:/usr/local/go/bin:$(go env GOPATH)/bin' >> ~/.bashrc
+source ~/.bashrc
+go version
+```
+
+### 4. Node 26.1.0 + Yarn 4.18.0 (via nvm)
+
+Node 25+ no longer bundles Corepack, so it's installed separately.
+
+```bash
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
+source ~/.bashrc
+nvm install 26.1.0
+nvm use 26.1.0
+npm install -g corepack
+corepack enable
+corepack prepare yarn@4.18.0 --activate
+```
+
+### 5. Wails CLI
+
+```bash
+go install github.com/wailsapp/wails/v2/cmd/wails@latest
+```
+
+### 6. Clone, fetch resources, and build
+
+```bash
+cd ~
+git clone https://github.com/<your-fork-or-upstream>/arduino-app-lab
+cd arduino-app-lab
+yarn
+
+cd standalone-apps/app-lab-desktop/internal/board/
+./download_resources.sh linux_arm64
+
+cd ../../internal/lsp/scripts
+./download_lsps.sh linux_arm64
+
+cd ../../..
+wails build -tags webkit2_41
+```
+
+The binary is produced at:
+
+**Full Changelog**: https://github.com/flavioscutti/arduino-app-lab-raspberry-pi/commits/v0.0.0
+
+---
+
 # Arduino App Lab
 
 This is the Arduino App Lab desktop application. It's a cross-platform application built with [Wails](https://wails.io)
