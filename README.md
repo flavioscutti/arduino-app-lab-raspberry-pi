@@ -5,7 +5,7 @@ This is an **unofficial** fork of [arduino/arduino-app-lab](https://github.com/a
 
 All source code is unmodified from upstream. This fork only adds Raspberry Pi build/packaging instructions and one runtime fix (see below). License: GPL-3.0 (see [LICENSE](LICENSE)), same as upstream.
 
-<img width="1920" height="1025" alt="Arduino-App-Lab" src="https://github.com/user-attachments/assets/16a1dfad-fc22-46a8-afa5-baf3ce603410" />
+<img width="1920" height="1025" alt="Arduino-App-Lab_Raspberry-Pi_Linux_arm64-0 11 0" src="https://github.com/user-attachments/assets/7aae8820-93ad-4997-8b9e-3094e9a3dbfc" />
 
 ## Quick install (Raspberry Pi OS, 64-bit)
 
