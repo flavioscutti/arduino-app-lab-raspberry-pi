@@ -9,22 +9,27 @@ All source code is unmodified from upstream. This fork only adds Raspberry Pi bu
 
 ## Quick install (Raspberry Pi OS, 64-bit)
 
-1. Download the `.deb` from the [Releases](../../releases) page or [arduino-app-lab_0.0.0-dev-1_linux_arm64.deb](https://github.com/flavioscutti/arduino-app-lab-raspberry-pi/releases/download/untagged-7ed34b15a5c2d67bccbe/arduino-app-lab_0.0.0-dev-1_linux_arm64.deb)
-3. Install it:
+1. Download the `.deb` from the [Releases](../../releases) page.
+2. Install it:
    ```bash
    sudo apt install ./arduino-app-lab_*.deb
    ```
-4. Launch "Arduino App Lab" from the Applications menu, or from a terminal:
+3. Launch "Arduino App Lab" from the Applications menu, or from a terminal:
    ```bash
-   WEBKIT_DISABLE_COMPOSITING_MODE=1 ArduinoAppLab
+   ArduinoAppLab
    ```
+   (the rendering fix below is already applied automatically — no extra flags needed)
 
 ## Known issue: garbled window on launch
 
-On Raspberry Pi, WebKitGTK's hardware-accelerated compositing can render the window as corrupted/garbled until it's resized. The `.deb` package already launches with the fix applied (`WEBKIT_DISABLE_COMPOSITING_MODE=1`). If you build from source yourself, remember to set this environment variable when launching, or add it to the `Exec=` line of the `.desktop` file:
+On Raspberry Pi, WebKitGTK's hardware-accelerated compositing can render the window as corrupted/garbled until it's resized. Setting `WEBKIT_DISABLE_COMPOSITING_MODE=1` fixes it, **but** App Lab rewrites its own `~/.local/share/applications/ArduinoAppLab.desktop` file from scratch on every launch (to register its `arduino-app-lab://` protocol handler), silently discarding any fix placed only in that file's `Exec=` line or in the session environment.
+
+The reliable fix is to put the environment variable on the binary's own path, so it applies no matter how the app is launched. This package already does it: the real executable is installed as `/usr/bin/ArduinoAppLab.bin`, and `/usr/bin/ArduinoAppLab` is a small wrapper script:
 
 ```bash
-sed -i 's#^Exec=#Exec=env WEBKIT_DISABLE_COMPOSITING_MODE=1 #' ~/.local/share/applications/ArduinoAppLab.desktop
+#!/bin/sh
+export WEBKIT_DISABLE_COMPOSITING_MODE=1
+exec "$(dirname "$0")/ArduinoAppLab.bin" "$@"
 ```
 
 ## Building from source
@@ -95,6 +100,30 @@ wails build -tags webkit2_41
 ```
 
 The binary is produced at:
+```
+standalone-apps/app-lab-desktop/build/bin/ArduinoAppLab
+```
+
+### 7. Apply the rendering fix permanently
+
+See "Known issue" above for why this is needed. Rename the real binary and put a wrapper script in its place:
+
+```bash
+cd standalone-apps/app-lab-desktop/build/bin
+mv ArduinoAppLab ArduinoAppLab.bin
+cat > ArduinoAppLab << 'EOF'
+#!/bin/sh
+export WEBKIT_DISABLE_COMPOSITING_MODE=1
+exec "$(dirname "$0")/ArduinoAppLab.bin" "$@"
+EOF
+chmod +x ArduinoAppLab
+```
+
+Then launch `./ArduinoAppLab`.
+
+## Credits
+
+All code is Arduino's (GPL-3.0). This fork exists only to document a working Raspberry Pi build path until official ARM64/Raspberry Pi support ships upstream.
 
 **Full Changelog**: https://github.com/flavioscutti/arduino-app-lab-raspberry-pi/commits/v0.0.0
 
