@@ -125,7 +125,7 @@ Then launch `./ArduinoAppLab`.
 
 All code is Arduino's (GPL-3.0). This fork exists only to document a working Raspberry Pi build path until official ARM64/Raspberry Pi support ships upstream.
 
-**Full Changelog**: https://github.com/flavioscutti/arduino-app-lab-raspberry-pi/commits/v0.0.0
+**Full Changelog**: https://github.com/flavioscutti/arduino-app-lab-raspberry-pi/commits/v0.11.0
 
 ---
 
